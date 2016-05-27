@@ -1,0 +1,229 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using SV4U.EDPL.DynamicMVC.Models;
+using DynamicMVC.UI.Controllers;
+using System.Threading.Tasks;
+
+using System.Collections;
+using System.Text;
+using System.Web.Routing;
+using DynamicMVC.Business.Attributes;
+using DynamicMVC.Business.Models;
+using DynamicMVC.Data;
+using DynamicMVC.UI.Extensions;
+using DynamicMVC.UI.ViewModels;
+
+using DynamicMVC.UI;
+
+using System.Data.Common;
+
+
+using SSHWrapper;
+
+namespace SV4U.EDPL.DynamicMVC.Controllers
+{
+    [Authorize]
+    public class JobController : Controller
+    //public class JobController : DynamicController
+    {
+        //MusicStoreEntities storeDB = new MusicStoreEntities();
+
+        public ActionResult Index()
+        {
+            //return View();
+
+            //var db = new StorageDBContext("DefaultConnection");
+            //return View(db.Storages.ToList());
+            //try
+            //{
+                ApplicationDbContext db = new ApplicationDbContext();
+                return View(db.Storage.OrderBy(s => s.Name).ToList());
+            //}
+            //catch(Exception ex)
+            //{
+            //    string str = ex.Message;
+            //}
+
+            //return View();
+
+            //using (var ctx = new StorageDBContext())
+            //using (var cmd = ctx.Database.Connection.CreateCommand())
+            //{
+            //    ctx.Database.Connection.ConnectionString = "server=rxfjzxng1d.database.windows.net,1433;Database=SV4UDataPipeDB;User ID=SV4UAdmin;Password=Swatcloud:2046;min pool size=10;max pool size=50;Connect Timeout=60;";
+            //    ctx.Database.Connection.Open();
+            //    cmd.CommandText = "SELECT * FROM Storages";
+            //    using (var reader = cmd.ExecuteReader())
+            //    {
+            //        var model = Read(reader).ToList();
+            //        return View(model);
+            //    }
+            //}
+        }
+
+        private static IEnumerable<object[]> Read(DbDataReader reader)
+        {
+            while (reader.Read())
+            {
+                var values = new List<object>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    values.Add(reader.GetValue(i));
+                }
+                yield return values.ToArray();
+            }
+        }
+
+        public ActionResult RunJob()
+        {
+            ViewBag.Message = "Your Job page.";
+
+            //Storage s = new Storage();
+            //var ss = s.Name;
+            //StorageDBContext db = new StorageDBContext(); 
+
+            //var storage = storeDB.Storage.ToList();
+            //var v = Storage.Name.
+
+            //IList<Storage> list = new List<Storage>();
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    list.Add(new Storage { Id = i, Name = "Org " + i });
+            //}
+
+            //return View(list);
+
+            //return View(db.Storages.ToList());
+            return View();
+        }
+
+        //
+        // POST: /Job/RunJob
+        [HttpPost]
+        [AllowAnonymous]
+        //public async Task<ActionResult> RunJob(SV4U.EDPL.DynamicMVC.Models.Storage model, string returnUrl)
+        public async Task<ActionResult> Index(SV4U.EDPL.DynamicMVC.Models.Storage model, string returnUrl)
+        {
+            //try
+            //{
+                //if (!ModelState.IsValid)
+                //{
+                //    return View(model);
+                //}
+
+                //string strClusterSourceIP = "142.0.252.92";
+                //string strClusterUserName = "root";
+                //string strClusterPassword = "";
+
+                //string strSourceIP = "142.0.252.92";
+                //string strSourceUserName = "root";
+                //string strSourcePassword = "";
+
+                //string strDestinationIP = "142.0.252.92";
+                //string strDestinationUserName = "root";
+                //string strDestinationPassword = "swatcloud";
+
+                string strClusterSourceIP = "";
+                string strClusterUserName = "";
+                string strClusterPassword = "";
+
+                string strSourceIP = "";
+                string strSourceUserName = "";
+                string strSourcePassword = "";
+                string strSourceDatabase = "";
+                string strSourceTable = "";
+
+                string strDestinationIP = "";
+                string strDestinationUserName = "";
+                string strDestinationPassword = "";
+                string strDestinationDatabase = "";
+                string strDestinationTable = "";
+
+                string strJobName = "";
+
+                string source = Request.Form["Source"];//get the source selected
+                string destination = Request.Form["Destination"];//get the destination selected
+
+                ApplicationDbContext db = new ApplicationDbContext();
+                //Find the job name
+                var ss = db.JobTB.Where(i => i.Source == source && i.Destinatiion == destination);
+                strJobName = ss.ToList()[0].JobName;
+
+                //Job Serve Parameters
+                var sClusterParameters = db.JobServer;
+                strClusterSourceIP = sClusterParameters.ToList()[0].IPAddress;
+                strClusterUserName = sClusterParameters.ToList()[0].UserName;
+                strClusterPassword = sClusterParameters.ToList()[0].Password;
+
+                if (strJobName.ToUpper().EndsWith("HDFS.JAR") || strJobName.ToUpper().EndsWith("HIVE.JAR"))
+                {
+                    //Source Parameters
+                    var sParameters = db.Storage
+                        .Where(i => i.Name == destination);
+                    strSourceIP = sParameters.ToList()[0].IPAddress;
+                    strSourceUserName = sParameters.ToList()[0].UserName;
+                    strSourcePassword = sParameters.ToList()[0].Password;
+                    strSourceDatabase = sParameters.ToList()[0].DBName;
+                    strSourceTable = sParameters.ToList()[0].TableName;
+
+                    //Destination Parameters
+                    var dParameters = db.Storage
+                        .Where(i => i.Name == source);
+                    strDestinationIP = dParameters.ToList()[0].IPAddress;
+                    strDestinationUserName = dParameters.ToList()[0].UserName;
+                    strDestinationPassword = dParameters.ToList()[0].Password;
+                    strDestinationDatabase = dParameters.ToList()[0].DBName;
+                    strDestinationTable = dParameters.ToList()[0].TableName;
+                }
+                else if (strJobName.ToUpper().EndsWith("SQL.JAR"))
+                {
+                    //Source Parameters
+                    var sParameters = db.Storage
+                        .Where(i => i.Name == source);
+                    strSourceIP = sParameters.ToList()[0].IPAddress;
+                    strSourceUserName = sParameters.ToList()[0].UserName;
+                    strSourcePassword = sParameters.ToList()[0].Password;
+                    strSourceDatabase = sParameters.ToList()[0].DBName;
+                    strSourceTable = sParameters.ToList()[0].TableName;
+
+                    //Destination Parameters
+                    var dParameters = db.Storage
+                        .Where(i => i.Name == destination);
+                    strDestinationIP = dParameters.ToList()[0].IPAddress;
+                    strDestinationUserName = dParameters.ToList()[0].UserName;
+                    strDestinationPassword = dParameters.ToList()[0].Password;
+                    strDestinationDatabase = dParameters.ToList()[0].DBName;
+                    strDestinationTable = dParameters.ToList()[0].TableName;
+                }
+
+
+                //Initialize sshCmdClient
+                SSHCommandClient sshCmdClient = new SSHCommandClient(strSourceIP, strSourceUserName, strSourcePassword,
+                                                                     strSourceDatabase, strSourceTable,
+                                                                     strDestinationIP, strDestinationUserName, strDestinationPassword,
+                                                                     strDestinationDatabase, strDestinationTable, strJobName);
+
+                sshCmdClient.ClusterHost = strClusterSourceIP;
+                sshCmdClient.ClusterUserName = strClusterUserName;
+                sshCmdClient.ClusterPassword = strClusterPassword;
+
+                //string x = await sshCmdClient.RunCmdInRemoteServerAsync();
+
+                string x = await Task.Run(() => sshCmdClient.RunCmdInRemoteServerAsync());
+
+                //string x = await sshCmdClient.RunCmdInRemoteServerAsyncMKDir();
+
+                db = new ApplicationDbContext();
+                return View(db.Storage.OrderBy(s => s.Name).ToList());
+            //}
+            //catch(Exception ex)
+            //{
+            //    string str = ex.Message;
+            //}
+
+            //return View();
+        }
+    }
+}

@@ -1,0 +1,231 @@
+﻿@using EnterpriseDataPipeline.Models
+@using System.Web.UI.WebControls; 
+@model IEnumerable<EnterpriseDataPipeline.Models.Storage>
+@{
+    ViewBag.Title = "SV4U Enterprise Data PipeLine";
+}
+
+
+<script>
+    //$(document).ready(function(){
+    //    $("body").css("background-color", "#F3F3F9")
+    //    //$("#facultyDetailSection").fadeOut(0);
+    //    //$("#studentDetailSection").fadeOut(0);
+    //});
+
+
+    $(document).ready(function () {
+        $("body").css("background-color", "#F3F3F3")
+        $("#lbDBTable").hide(); //hide the listbox for table by default
+
+        if ($("#ddlSource").val() === "MySQL") {
+            var divProd = $("#lbDBTable");
+            var url = '@Url.Action("GetDBTable", "Job")';
+            $.get(url, { dbTable: $("#ddlSource").val() },
+            function (data) {
+                divProd.empty();
+                for (var i = 0; i < data.length; i++) {
+                    divProd.append('<option value="' + data[i] + '">' + data[i] + '</option>');
+                }
+            });
+            divProd.show();
+        }
+
+        $("#ddlSource").change(function () {
+
+            //debugger;
+
+            //var divProd = $("#ddlDBTable");
+            var divProd = $("#lbDBTable");
+            var SelSource = $("#ddlSource").val();
+            if (SelSource === "MySQL") {
+                var url = '@Url.Action("GetDBTable", "Job")';
+                $.get(url, { dbTable: SelSource },
+                function (data) {
+
+                    //debugger;
+
+                    //var productDropdown = $("#ddlDBTable");
+                    //var productDropdown = divProd;
+                    divProd.empty();
+                    //productDropdown.empty();
+                    for (var i = 0; i < data.length; i++) {
+                        //productDropdown.append('<option value?+data[i]+?="">'+data[i]+'</option>');}
+                        //productDropdown.append('<option value="' + data[i] + '">' + data[i] + '</option>');
+                        divProd.append('<option value="' + data[i] + '">' + data[i] + '</option>');
+                    }
+                });
+                divProd.show();
+            }
+            else {
+                divProd.hide();
+            }
+        });
+    });
+
+
+    @*$(function () {
+        $("#ddlSource").change(function () {
+
+            debugger;
+
+            var selectedItem = $("#ddlSource").val().trim();
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "@(Url.Action("SomeAction", "Job"))",
+                data: { "Name": selectedItem },
+                success: function (data) {
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert('Failed to retrieve tables.');
+                }
+            });
+
+            if (selectedItem === "MySQL") {
+                //$("#facultyDetailSection").fadeOut();
+                //$("#studentDetailSection").fadeOut();
+            }
+            else {
+                //getFacultyTable();
+                //getStudentTable();
+                //$("#facultyDetailSection").fadeIn();
+                //$("#studentDetailSection").fadeIn();
+            }
+        });
+    });*@
+
+    @*function getFacultyTable() {
+        $("#facultyDetailTable").empty();
+        $("#facultyDetailTable").append("<table id='tblfaculty'  class='tableStyle'><tr><th class='tableHeader' style='width:60px;'>Employee ID</th><th class='tableHeader'>Faculty Name</th></tr></table>");
+
+        //Get all faculties with the help of viewmodel(Model.allFaculties), and convert data into json format.
+        var allFaculties = @Html.Raw(Json.Encode(Model.allFaculties));
+
+        for (var i = 0; i < allFaculties.length; i++) {
+            var allotedCourses = allFaculties[i].AllotedCourses;
+            for (var j = 0; j < allotedCourses.length; j++) {
+                if(allotedCourses[j].CourseName === selectedCourseName)
+                    $("#tblfaculty").append("<tr><td class='tableCell'>"  + allFaculties[i].FacultyId
+                        + "</td><td class='tableCell'>"+allFaculties[i].FacultyName+"</td></tr>");
+            }
+        }
+    }*@
+
+        @*function getStudentTable() {
+        $("#studentDetailTable").empty();
+        $("#studentDetailTable").append("<table id='tblStudent' class='tableStyle'><tr><th class='tableHeader' style='width:60px;'>Roll No</th><th class='tableHeader'>Student Name</th></tr></table>");
+
+        //Get all students with the help of viewmodel(Model.allStudents), and convert data into json format.
+        var allStudents = @Html.Raw(Json.Encode(Model.allStudents));
+
+        for (var i = 0; i < allStudents.length; i++) {
+            var studentCourses = allStudents[i].EnrolledCourses;
+            for (var j = 0; j < studentCourses.length; j++) {
+                if(studentCourses[j].CourseName === selectedCourseName)
+                    $("#tblStudent").append("<tr><td class='tableCell'>"  + allStudents[i].EnrollmentNo
+                        + "</td><td  class='tableCell'>"+allStudents[i].StudentName+"</td></tr>");
+            }
+        }
+    }*@
+
+</script>
+
+
+
+<h2>
+    @ViewBag.Title.    
+</h2>
+<div class="row">
+    <div class="col-md-8">
+        <section id="loginForm">
+            @using (Html.BeginForm("Index", "Job", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+
+                <h4>Select a job to run.</h4>
+                <hr />                
+                <table align="center" class="taskList" bordercolor="#bbbbbb" style="width: 600px; border-collapse: collapse;" border="1" cellspacing="0" cellpadding="3">
+				<tbody>
+					<tr>
+						<td style="width: 20%; text-align: center;">
+							<label>Source</label>
+						</td>
+						<td style="width: 20%; text-align: center;">
+							<label>Action</label>
+						</td>						
+						<td style="width: 20%; text-align: center;">
+							<label>Destination</label>
+						</td>						
+					</tr>
+					<tr>
+						<td style="width: 20%; text-align: center;">
+							<div class="form-group">							
+
+                                    @Html.DropDownList("Source", new SelectList(Model.Select(i => i.Name).Distinct().ToList(), "MySQL"), new { @class = "width305", @id = "ddlSource" });
+
+                                </div>
+                            </td>
+                            <td style="width: 20%; text-align: center;">
+                                <input type="submit" value="Transfer >>" class="btn btn-default" />
+                            </td>
+                            <td style="width: 20%; text-align: center;">
+                                <div class="form-group">
+
+                                    @Html.DropDownList("Destination", new SelectList(Model.Select(i => i.Name).Distinct().ToList(), "HDFS"));
+
+                               </div>
+                            </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                <br />
+                <br />
+                <table align="center" class="taskList" bordercolor="#bbbbbb" style="width: 600px; border-collapse: collapse;" border="1" cellspacing="0" cellpadding="3">
+                    <tbody>
+                        <tr>
+                            <td style="width: 20%; text-align: center;">
+                                <label>DB Table</label>
+                            </td>
+                            <td style="width: 20%; text-align: center;">
+                                <label></label>
+                            </td>
+                            <td style="width: 20%; text-align: center;">
+                                <label></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 20%; text-align: left;">
+                                @{var mItems = new List<SelectListItem>
+                                                {   
+                                                    new SelectListItem { Value="Books", Text="Books"},
+                                                    new SelectListItem { Value="Books_Per_Year", Text="Books_Per_Year"},
+                                                    new SelectListItem { Value="Buyers", Text="Buyers"},
+                                                    new SelectListItem { Value="Orders", Text="Orders"},
+                                                    new SelectListItem { Value="Orders_By_Pub", Text="Orders_By_Pub"},
+                                                };
+                                }
+                                @*@Html.ListBox("DBTable", mItems, "Books")*@
+                                @*@Html.DropDownList("DBTable", mItems, new { @class = "width305", @id = "ddlDBTable" });*@
+
+                                @Html.ListBox("DBTable", new SelectList(mItems, "Books"), new { @class = "width305", @id = "lbDBTable" })
+
+                            </td>
+                            <td style="width: 20%; text-align: center;">
+                                <label></label>
+                            </td>
+                            <td style="width: 20%; text-align: center;">
+                                <label></label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            }
+
+            </section>
+        </div>
+    </div>
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+    }

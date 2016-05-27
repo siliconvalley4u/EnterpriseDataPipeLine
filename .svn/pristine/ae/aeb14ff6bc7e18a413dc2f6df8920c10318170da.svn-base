@@ -1,0 +1,33 @@
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
+using System.Collections.Generic;
+using DynamicMVC.Business.Attributes;
+
+namespace SV4U.EDPL.DynamicMVC.Models
+{
+    [DynamicEntity]
+    [DynamicMenuItem("Job Status", "Admin")]
+    [DisplayName("Job Status")]
+    [Bind(Exclude = "Id")]
+    public class JobStatus
+    {
+        
+        [ScaffoldColumn(false)]
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "An Storage Name is required")]
+        [StringLength(1024)]
+        public string Source { get; set; }
+
+        [Required(ErrorMessage = "An Storage Name is required")]
+        [StringLength(1024)]
+        public string Destinatiion { get; set; }
+
+        [StringLength(1024)]
+        public string JobName { get; set; }
+
+        [StringLength(1024)]
+        public string Status { get; set; }
+    }
+}

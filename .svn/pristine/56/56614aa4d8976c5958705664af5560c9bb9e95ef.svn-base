@@ -1,0 +1,14 @@
+﻿using System.Web;
+using System.Web.Mvc;
+
+//namespace SV4U.EDPL.DynamicMVC
+namespace DynamicMVC
+{
+    public class FilterConfig
+    {
+        public static void RegisterGlobalFilters(GlobalFilterCollection filters)
+        {
+            filters.Add(new HandleErrorAttribute());
+        }
+    }
+}
